@@ -1,0 +1,14 @@
+
+.DS_Store
+*.swp
+
+Solution
+bin
+lib
+pack
+3rdlib
+
+ios.sh
+macos.sh
+windows.bat
+clean.sh

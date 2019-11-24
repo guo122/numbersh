@@ -1,0 +1,15 @@
+
+set(_project_name pugixml)
+aux_add_lib(${_project_name} "3rd")
+
+target_include_directories(
+	${_project_name} 
+	PRIVATE 
+	${CMAKE_CURRENT_LIST_DIR}/include/${_project_name}
+	)
+
+target_include_directories(
+	${_project_name} 
+	PUBLIC 
+	${CMAKE_CURRENT_LIST_DIR}/include
+	)
