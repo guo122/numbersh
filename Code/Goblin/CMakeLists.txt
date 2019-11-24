@@ -4,6 +4,7 @@ set(_project_name goblin)
 link_libraries(
 	pugixml
 	mlTime
+	mlPath
 	)
 
 aux_add_exe(${_project_name} "Numbersh")

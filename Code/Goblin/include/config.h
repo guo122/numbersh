@@ -2,6 +2,6 @@
 #ifndef _CONFIG_H_90C26EB668F724842A44C49C6499BE4E_
 #define _CONFIG_H_90C26EB668F724842A44C49C6499BE4E_
 
-static const char s_DataPath[] = "./numbersh.tmp";
+static const char s_RuntimeDataPath[] = "~/etc/.numbersh.tmp";
 
 #endif // _CONFIG_H_90C26EB668F724842A44C49C6499BE4E_

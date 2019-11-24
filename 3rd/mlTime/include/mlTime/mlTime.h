@@ -49,9 +49,9 @@
 namespace mlTime
 {
 
-void Timestamp2String( int timestamp_, const char * format_, char * str_, int str_size_ );
+void Timestamp2String( const long & timestamp_, const char * format_, char * str_, int str_size_ );
 
-void String2Timestamp( const char * str_, const char * format_, int & timestamp_ );
+void String2Timestamp( const char * str_, const char * format_, long & timestamp_ );
 
 };
 

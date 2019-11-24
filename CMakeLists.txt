@@ -22,5 +22,6 @@ add_compile_options(-std=c++1y)
 
 add_subdirectory("3rd/pugixml")
 add_subdirectory("3rd/mlTime")
+add_subdirectory("3rd/mlPath")
 
 add_subdirectory("Code/Goblin")

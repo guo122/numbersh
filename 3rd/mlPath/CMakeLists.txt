@@ -1,5 +1,5 @@
 
-set(_project_name mlTime)
+set(_project_name mlPath)
 
 if(_test)
 	aux_add_exe(
