@@ -5,6 +5,8 @@ link_libraries(
 	pugixml
 	mlTime
 	mlPath
+	mlLog
+	mlCmd
 	)
 
 aux_add_exe(${_project_name} "Numbersh")

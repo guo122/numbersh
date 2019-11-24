@@ -27,11 +27,21 @@ public:
     void    AddDataToCache( float data_, const char * comment_ );
     void    CacheToStorage();
     
+public:
+    void    ShowStatus();
+    void    ShowCache();
+    void    ShowStorage();
+    void    ShowGeneral();
+    void    ShowAllData();
+    void    ShowHelp();
+    
 private:
     bool    _SaveRuntimeData();
     bool    _LoadRuntimeData();
     
     bool    _LoadConfig();
+    
+    void    _ShowList( const char * path_, const char * tag_ );
     
     bool    _Date2Timestamp( const char * date_, long & timestamp_ );
     
