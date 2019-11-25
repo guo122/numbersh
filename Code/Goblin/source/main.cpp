@@ -7,7 +7,11 @@ int main( int argc, const char * argv[] )
     {
         mlCmd::Phrase phrase( argc, argv );
         const char * cmd = phrase.next();
-        if ( strcmp( cmd, "type") == 0 )
+        if ( strcmp( cmd, "printcomplete") == 0 )
+        {
+            Goblin::PrintComplete( phrase.next() );
+        }
+        else if ( strcmp( cmd, "type") == 0 )
         {
             Goblin::Instance()->SetType( phrase.next() );
         }

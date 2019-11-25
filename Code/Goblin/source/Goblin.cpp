@@ -220,7 +220,28 @@ void Goblin::ShowAllData()
 //-------------------------------------------------------------------------
 void Goblin::ShowHelp()
 {
-    
+    mlLog::Print("usage goblin: action option\n");
+}
+
+//-------------------------------------------------------------------------
+void Goblin::PrintComplete( const char * cmd_ )
+{
+    if ( strcmp( cmd_, "goblin" ) == 0 )
+    {
+        mlLog::Print("type classify kind next prev date save cache storage all current help");
+    }
+    else if ( strcmp( cmd_, "type" ) == 0 )
+    {
+        mlLog::Print("Goblin");
+    }
+    else if ( strcmp( cmd_, "classify" ) == 0 )
+    {
+        mlLog::Print("");
+    }
+    else if ( strcmp( cmd_, "kind" ) == 0 )
+    {
+        mlLog::Print("");
+    }
 }
 
 //-------------------------------------------------------------------------

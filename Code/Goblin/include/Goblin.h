@@ -35,6 +35,9 @@ public:
     void    ShowAllData();
     void    ShowHelp();
     
+public:
+    static void PrintComplete( const char * cmd_ );
+    
 private:
     bool    _SaveRuntimeData();
     bool    _LoadRuntimeData();
