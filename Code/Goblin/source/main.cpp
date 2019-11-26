@@ -9,7 +9,7 @@ int main( int argc, const char * argv[] )
         const char * cmd = phrase.next();
         if ( strcmp( cmd, "printcomplete") == 0 )
         {
-            Goblin::PrintComplete( phrase.next() );
+            Goblin::Instance()->PrintComplete( phrase.next() );
         }
         else if ( strcmp( cmd, "type") == 0 )
         {

@@ -232,22 +232,72 @@ void Goblin::ShowVersion()
 //-------------------------------------------------------------------------
 void Goblin::PrintComplete( const char * cmd_ )
 {
-    if ( strcmp( cmd_, "goblin" ) == 0 )
+    pugi::xml_document doc;
+    char bPath[255];
+    mlPath::HomeDash2Absolute( m_cConfigPath, bPath );
+    pugi::xml_parse_result result = doc.load_file(bPath);
+    if (result)
     {
-        mlLog::Print("type classify kind next prev date save cache storage all current help version");
+        pugi::xml_node root = doc.child("NumbershConfig");
+        
+        if ( strcmp( cmd_, "goblin" ) == 0 )
+        {
+            mlLog::Print("type classify kind next prev date save cache storage all current help version");
+        }
+        else if ( strcmp( cmd_, "type" ) == 0 )
+        {
+            char buffer[255] = "";
+            for ( pugi::xml_node node : root.children() )
+            {
+                sprintf(buffer, "%s %s", buffer, node.attribute("name").as_string());
+            }
+            mlLog::Print( buffer );
+        }
+        else if ( strcmp( cmd_, "classify" ) == 0 )
+        {
+            char * buffer = NULL;
+            for ( pugi::xml_node type_node : root.children() )
+            {
+                if ( strcmp( m_cType, type_node.attribute("name").as_string() ) == 0 )
+                {
+                    buffer = new char[type_node.attribute("size").as_int()];
+                    for ( pugi::xml_node classify_node : type_node.children() )
+                    {
+                        sprintf(buffer, "%s %s", buffer, classify_node.attribute("name").as_string());
+                    }
+                    mlLog::Print( buffer );
+                    delete[] buffer;
+                    return;
+                }
+            }
+        }
+        else if ( strcmp( cmd_, "kind" ) == 0 )
+        {
+            char * buffer = NULL;
+            for ( pugi::xml_node type_node : root.children() )
+            {
+                if ( strcmp( m_cType, type_node.attribute("name").as_string() ) == 0 )
+                {
+                    for ( pugi::xml_node classify_node : type_node.children() )
+                    {
+                        if ( strcmp( m_cClassify, classify_node.attribute("name").as_string() ) == 0 )
+                        {
+                            buffer = new char[classify_node.attribute("size").as_int()];
+                            for ( pugi::xml_node kind_node : classify_node.children() )
+                            {
+                                sprintf(buffer, "%s %s", buffer, kind_node.child_value());
+                            }
+                            mlLog::Print( buffer );
+                            delete[] buffer;
+                            return;
+                        }
+                    }
+                }
+            }
+        }
     }
-    else if ( strcmp( cmd_, "type" ) == 0 )
-    {
-        mlLog::Print("Goblin");
-    }
-    else if ( strcmp( cmd_, "classify" ) == 0 )
-    {
-        mlLog::Print("");
-    }
-    else if ( strcmp( cmd_, "kind" ) == 0 )
-    {
-        mlLog::Print("");
-    }
+    
+
 }
 
 //-------------------------------------------------------------------------
@@ -317,6 +367,13 @@ bool Goblin::_LoadConfig()
     {
         pugi::xml_node root = doc.append_child("NumbershConfig");
         root.append_attribute("WorkPath").set_value("~/Documents");
+        pugi::xml_node node = root.append_child("Type");
+        node.append_attribute("name");
+        node.append_attribute("size").set_value(0);
+        node = node.append_child("Classify");
+        node.append_attribute("name");
+        node.append_attribute("size").set_value(0);
+        node = node.append_child("Kind");
         return doc.save_file( bPath );
     }
 }

@@ -40,7 +40,7 @@ public:
     void    ShowVersion();
     
 public:
-    static void PrintComplete( const char * cmd_ );
+    void    PrintComplete( const char * cmd_ );
     
 private:
     bool    _SaveRuntimeData();
