@@ -7,6 +7,7 @@ link_libraries(
 	mlPath
 	mlLog
 	mlCmd
+	mlChar
 	)
 
 aux_add_exe(${_project_name} "Numbersh")

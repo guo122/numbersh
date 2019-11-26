@@ -59,6 +59,10 @@ int main( int argc, const char * argv[] )
         {
             Goblin::Instance()->ShowHelp();
         }
+        else if ( strcmp( cmd, "version") == 0 )
+        {
+            Goblin::Instance()->ShowVersion();
+        }
         else
         {
             Goblin::Instance()->AddDataToCache( atof( cmd ), phrase.next() );

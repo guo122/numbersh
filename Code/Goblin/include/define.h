@@ -9,6 +9,7 @@
 #include <mlPath/mlPath.h>
 #include <mlLog/mlLog.h>
 #include <mlCmd/mlCmd.h>
+#include <mlChar/mlChar.h>
 
 #include "config.h"
 

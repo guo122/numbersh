@@ -25,5 +25,6 @@ add_subdirectory("3rd/mlTime")
 add_subdirectory("3rd/mlPath")
 add_subdirectory("3rd/mlLog")
 add_subdirectory("3rd/mlCmd")
+add_subdirectory("3rd/mlChar")
 
 add_subdirectory("Code/Goblin")

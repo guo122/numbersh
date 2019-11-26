@@ -25,6 +25,7 @@ void HomeDash2Absolute( const char * homeDash_, char * absolute_ )
 
     if ( bJustCopy )
     {
+        // todo(gzy): char size
         strcpy(absolute_, homeDash_);
     }
 }

@@ -74,51 +74,51 @@ bool Goblin::SetDay( const char * date_ )
 //-------------------------------------------------------------------------
 const char * Goblin::GetType()
 {
-    return m_sType.c_str();
+    return m_cType;
 }
 
 //-------------------------------------------------------------------------
 void Goblin::SetType( const char * type_ )
 {
-    m_sType = type_;
+    mlChar::Strcpy(m_cType, _CLASSIFY_MAX, type_);
 }
 
 //-------------------------------------------------------------------------
 const char * Goblin::GetClassify()
 {
-    return m_sClassify.c_str();
+    return m_cClassify;
 }
 
 //-------------------------------------------------------------------------
 void Goblin::SetClassify( const char * classify_ )
 {
-    m_sClassify = classify_;
+    mlChar::Strcpy(m_cClassify, _CLASSIFY_MAX, classify_);
 }
 
 //-------------------------------------------------------------------------
 const char * Goblin::GetKind()
 {
-    return m_sKind.c_str();
+    return m_cKind;
 }
 
 //-------------------------------------------------------------------------
 void Goblin::SetKind( const char * kind_ )
 {
-    m_sKind = kind_;
+    mlChar::Strcpy(m_cKind, _CLASSIFY_MAX, kind_);
 }
 
 //-------------------------------------------------------------------------
 void Goblin::AddDataToCache( float data_, const char * comment_ )
 {
     char bPath[255];
-    mlPath::HomeDash2Absolute( m_sWorkPath.c_str(), bPath );
-    sprintf(bPath, "%s/%s.cache.xml", bPath, m_sType.c_str() );
+    mlPath::HomeDash2Absolute( m_cWorkPath, bPath );
+    sprintf(bPath, "%s/%s.cache.xml", bPath, m_cType );
     
     pugi::xml_document doc;
     pugi::xml_parse_result result = doc.load_file( bPath );
     if ( !result )
     {
-        doc.append_child("NumbershXml").append_attribute("type").set_value(m_sType.c_str());
+        doc.append_child("NumbershXml").append_attribute("type").set_value(m_cType);
     }
     pugi::xml_node root = doc.child("NumbershXml");
     
@@ -126,8 +126,8 @@ void Goblin::AddDataToCache( float data_, const char * comment_ )
     mlTime::Timestamp2String(m_lToday, "C%Y%m%d", cToday, 10);
     pugi::xml_node node = root.append_child( cToday );
     
-    node.append_attribute("Classify").set_value(m_sClassify.c_str());
-    node.append_attribute("Kind").set_value(m_sKind.c_str());
+    node.append_attribute("Classify").set_value(m_cClassify);
+    node.append_attribute("Kind").set_value(m_cKind);
     node.append_attribute("Comment").set_value(comment_);
     node.append_attribute("Value").set_value(data_);
     
@@ -138,9 +138,9 @@ void Goblin::AddDataToCache( float data_, const char * comment_ )
 void Goblin::CacheToStorage()
 {
     char bPath[255], bCachePath[255], bStoragePath[255];
-    mlPath::HomeDash2Absolute( m_sWorkPath.c_str(), bPath );
-    sprintf(bCachePath, "%s/%s.cache.xml", bPath, m_sType.c_str() );
-    sprintf(bStoragePath, "%s/%s.xml", bPath, m_sType.c_str() );
+    mlPath::HomeDash2Absolute( m_cWorkPath, bPath );
+    sprintf(bCachePath, "%s/%s.cache.xml", bPath, m_cType );
+    sprintf(bStoragePath, "%s/%s.xml", bPath, m_cType );
     
     pugi::xml_document cache_doc, storage_doc;
     pugi::xml_parse_result cache_result = cache_doc.load_file( bCachePath );
@@ -176,26 +176,26 @@ void Goblin::ShowStatus()
 {
     char cDate[11];
     Goblin::Instance()->GetDay( cDate, 11 );
-    mlLog::Print( "[%s] %s\n", m_sType.c_str(), cDate );
-    mlLog::Print( "%s / %s\n", m_sClassify.c_str(), m_sKind.c_str() );
+    mlLog::Print( "[%s] %s\n", m_cType, cDate );
+    mlLog::Print( "%s / %s\n", m_cClassify, m_cKind );
 }
 
 //-------------------------------------------------------------------------
 void Goblin::ShowCache()
 {
     char bPath[255];
-    mlPath::HomeDash2Absolute( m_sWorkPath.c_str(), bPath );
-    sprintf(bPath, "%s/%s.cache.xml", bPath, m_sType.c_str() );
-    _ShowList( bPath, m_sType.c_str() );
+    mlPath::HomeDash2Absolute( m_cWorkPath, bPath );
+    sprintf(bPath, "%s/%s.cache.xml", bPath, m_cType );
+    _ShowList( bPath, m_cType );
 }
 
 //-------------------------------------------------------------------------
 void Goblin::ShowStorage()
 {
     char bPath[255];
-    mlPath::HomeDash2Absolute( m_sWorkPath.c_str(), bPath );
-    sprintf(bPath, "%s/%s.xml", bPath, m_sType.c_str() );
-    _ShowList( bPath, m_sType.c_str() );
+    mlPath::HomeDash2Absolute( m_cWorkPath, bPath );
+    sprintf(bPath, "%s/%s.xml", bPath, m_cType );
+    _ShowList( bPath, m_cType );
 }
 
 //-------------------------------------------------------------------------
@@ -208,12 +208,12 @@ void Goblin::ShowGeneral()
 void Goblin::ShowAllData()
 {
     char bPath[255];
-    mlPath::HomeDash2Absolute( m_sWorkPath.c_str(), bPath );
-    sprintf(bPath, "%s/%s.xml", bPath, m_sType.c_str() );
-    _ShowList( bPath, m_sType.c_str() );
+    mlPath::HomeDash2Absolute( m_cWorkPath, bPath );
+    sprintf(bPath, "%s/%s.xml", bPath, m_cType );
+    _ShowList( bPath, m_cType );
     
-    mlPath::HomeDash2Absolute( m_sWorkPath.c_str(), bPath );
-    sprintf(bPath, "%s/%s.cache.xml", bPath, m_sType.c_str() );
+    mlPath::HomeDash2Absolute( m_cWorkPath, bPath );
+    sprintf(bPath, "%s/%s.cache.xml", bPath, m_cType );
     _ShowList( bPath, "cache" );
 }
 
@@ -224,11 +224,17 @@ void Goblin::ShowHelp()
 }
 
 //-------------------------------------------------------------------------
+void Goblin::ShowVersion()
+{
+    mlLog::Print("v0.0.2\n");
+}
+
+//-------------------------------------------------------------------------
 void Goblin::PrintComplete( const char * cmd_ )
 {
     if ( strcmp( cmd_, "goblin" ) == 0 )
     {
-        mlLog::Print("type classify kind next prev date save cache storage all current help");
+        mlLog::Print("type classify kind next prev date save cache storage all current help version");
     }
     else if ( strcmp( cmd_, "type" ) == 0 )
     {
@@ -250,16 +256,16 @@ bool Goblin::_SaveRuntimeData()
     pugi::xml_document doc;
     
     pugi::xml_node root = doc.append_child("NumbershRuntime");
-    root.append_attribute("ConfigPath").set_value(m_sConfigPath.c_str());
+    root.append_attribute("ConfigPath").set_value(m_cConfigPath);
     
     pugi::xml_node runtime = root.append_child("Runtime");
     
     char cToday[9];
     mlTime::Timestamp2String(m_lToday, "%Y%m%d", cToday, 9);
     runtime.append_attribute("Today").set_value(cToday);
-    runtime.append_attribute("Type").set_value(m_sType.c_str());
-    runtime.append_attribute("Classify").set_value(m_sClassify.c_str());
-    runtime.append_attribute("Kind").set_value(m_sKind.c_str());
+    runtime.append_attribute("Type").set_value(m_cType);
+    runtime.append_attribute("Classify").set_value(m_cClassify);
+    runtime.append_attribute("Kind").set_value(m_cKind);
     
     char bPath[255];
     mlPath::HomeDash2Absolute( s_RuntimeDataPath, bPath );
@@ -278,16 +284,16 @@ bool Goblin::_LoadRuntimeData()
     if (result)
     {
         pugi::xml_node root  = doc.child("NumbershRuntime");
-        m_sConfigPath = root.attribute("ConfigPath").as_string();
+        mlChar::Strcpy(m_cConfigPath, _PATH_MAX, root.attribute("ConfigPath").as_string());
         
         pugi::xml_node runtime = root.child("Runtime");
         if ( !_Date2Timestamp( runtime.attribute("Today").as_string(), m_lToday ) )
         {
             mlLog::Warning("file today date format wrong.");
         }
-        m_sType = runtime.attribute("Type").as_string();
-        m_sClassify = runtime.attribute("Classify").as_string();
-        m_sKind = runtime.attribute("Kind").as_string();
+        mlChar::Strcpy(m_cType, _CLASSIFY_MAX, runtime.attribute("Type").as_string());
+        mlChar::Strcpy(m_cClassify, _CLASSIFY_MAX, runtime.attribute("Classify").as_string());
+        mlChar::Strcpy(m_cKind, _CLASSIFY_MAX, runtime.attribute("Kind").as_string());
     }
     
     return ret;
@@ -298,13 +304,13 @@ bool Goblin::_LoadConfig()
 {
     pugi::xml_document doc;
     char bPath[255];
-    mlPath::HomeDash2Absolute( m_sConfigPath.c_str(), bPath );
+    mlPath::HomeDash2Absolute( m_cConfigPath, bPath );
     pugi::xml_parse_result result = doc.load_file(bPath);
     if (result)
     {
         pugi::xml_node root  = doc.child("NumbershConfig");
         
-        m_sWorkPath = root.attribute("WorkPath").as_string();
+        mlChar::Strcpy(m_cWorkPath, _PATH_MAX, root.attribute("WorkPath").as_string());
         return true;
     }
     else

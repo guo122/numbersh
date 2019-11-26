@@ -4,6 +4,9 @@
 
 #include "define.h"
 
+static const int _PATH_MAX = 255;
+static const int _CLASSIFY_MAX = 50;
+
 class Goblin
 {
 public:
@@ -34,6 +37,7 @@ public:
     void    ShowGeneral();
     void    ShowAllData();
     void    ShowHelp();
+    void    ShowVersion();
     
 public:
     static void PrintComplete( const char * cmd_ );
@@ -49,12 +53,12 @@ private:
     bool    _Date2Timestamp( const char * date_, long & timestamp_ );
     
 private:
-    std::string     m_sConfigPath{ "~/etc/numbersh.xml" };
-    std::string     m_sWorkPath{ "~/Documents" };
-    long            m_lToday{ 0 };
-    std::string     m_sType{ "" };
-    std::string     m_sClassify{ "" };
-    std::string     m_sKind{ "" };
+    char     m_cConfigPath[_PATH_MAX]{ "~/etc/numbersh.xml" };
+    char     m_cWorkPath[_PATH_MAX]{ "~/Documents" };
+    long     m_lToday{ 0 };
+    char     m_cType[_CLASSIFY_MAX]{ "" };
+    char     m_cClassify[_CLASSIFY_MAX]{ "" };
+    char     m_cKind[_CLASSIFY_MAX]{ "" };
     
 private:
     Goblin();
