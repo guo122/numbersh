@@ -1,7 +1,26 @@
 
+#include <vector>
+
 #include "Goblin.h"
 
 static Goblin * obj = nullptr;
+
+struct GoblinDesc
+{
+    GoblinDesc( const char * date_, const char * classify_, const char * kind_, const char * comment_, float value_ )
+    {
+        mlChar::Strcpy(date, 10, date_);
+        mlChar::Strcpy(classify, 50, classify_);
+        mlChar::Strcpy(kind, 50, kind_);
+        mlChar::Strcpy(comment, 100, comment_);
+        value = value_;
+    }
+    char date[10];
+    char classify[50];
+    char kind[50];
+    char comment[100];
+    float value;
+};
 
 //-------------------------------------------------------------------------
 Goblin *Goblin::Instance()
@@ -170,6 +189,57 @@ void Goblin::CacheToStorage()
         cache_doc.reset();
         cache_doc.save_file( bCachePath );
     }
+    
+    pugi::xml_document doc;
+    pugi::xml_parse_result result = doc.load_file( bStoragePath );
+    if ( result )
+    {
+        pugi::xml_node root = doc.child("NumbershXml");
+        if ( root )
+        {
+            std::vector<GoblinDesc> nodeList;
+
+            for ( pugi::xml_node node : root.children() )
+            {
+                nodeList.push_back(GoblinDesc(node.name(), node.attribute("Classify").as_string(), node.attribute("Kind").as_string(), node.attribute("Comment").as_string(), node.attribute("Value").as_float()));
+            }
+            std::sort(nodeList.begin(), nodeList.end(), []( GoblinDesc &x, GoblinDesc &y ){
+                if ( strcmp( x.date, y.date ) > 0 )
+                {
+                    return true;
+                }
+                else if ( strcmp( x.date, y.date ) == 0 )
+                {
+                    if ( strcmp( x.classify, y.classify ) > 0 )
+                    {
+                        return true;
+                    }
+                    else if ( strcmp( x.classify, y.classify ) == 0 )
+                    {
+                        if ( strcmp( x.kind, y.kind ) > 0 )
+                        {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            });
+            
+            doc.reset();
+            
+            root = doc.append_child("NumbershXml");
+            root.append_attribute("type").set_value(m_cType);
+            for ( auto & x: nodeList )
+            {
+                pugi::xml_node node = root.append_child(x.date);
+                node.append_attribute("Classify").set_value(x.classify);
+                node.append_attribute("Kind").set_value(x.kind);
+                node.append_attribute("Comment").set_value(x.comment);
+                node.append_attribute("Value").set_value(x.value);
+            }
+            doc.save_file(bStoragePath);
+        }
+    }
 }
 
 void Goblin::ShowStatus()
@@ -201,7 +271,10 @@ void Goblin::ShowStorage()
 //-------------------------------------------------------------------------
 void Goblin::ShowGeneral()
 {
-    
+    char bPath[255];
+    mlPath::HomeDash2Absolute( m_cWorkPath, bPath );
+    sprintf(bPath, "%s/%s.xml", bPath, m_cType );
+    _ShowGeneral( bPath );
 }
 
 //-------------------------------------------------------------------------
@@ -296,8 +369,6 @@ void Goblin::PrintComplete( const char * cmd_ )
             }
         }
     }
-    
-
 }
 
 //-------------------------------------------------------------------------
@@ -375,6 +446,98 @@ bool Goblin::_LoadConfig()
         node.append_attribute("size").set_value(0);
         node = node.append_child("Kind");
         return doc.save_file( bPath );
+    }
+}
+
+//-------------------------------------------------------------------------
+void Goblin::_ShowGeneral( const char * path_ )
+{
+    char bPath[255];
+    mlPath::HomeDash2Absolute( m_cConfigPath, bPath );
+    pugi::xml_document doc, config_doc;
+    pugi::xml_parse_result result = doc.load_file( path_ );
+    pugi::xml_parse_result config_result = config_doc.load_file( bPath );
+    if ( result && config_result )
+    {
+        pugi::xml_node config_root = config_doc.child("NumbershConfig");
+        pugi::xml_node root = doc.child("NumbershXml");
+        if ( root && config_root )
+        {
+            std::vector<GoblinDesc> nodeList;
+            std::vector<std::string> classifyList;
+            std::vector<std::string> spaceList;
+            std::vector<float>  valueList;
+            
+            for ( pugi::xml_node type_node : config_root.children() )
+            {
+                if ( strcmp( m_cType, type_node.attribute("name").as_string() ) == 0 )
+                {
+                    for ( pugi::xml_node classify_node : type_node.children() )
+                    {
+                        classifyList.push_back(classify_node.attribute("name").as_string());
+                        spaceList.push_back(classify_node.attribute("space").as_string());
+                        valueList.push_back(0);
+                    }
+                }
+            }
+
+            for ( pugi::xml_node node : root.children() )
+            {
+                nodeList.push_back(GoblinDesc(node.name(), node.attribute("Classify").as_string(), node.attribute("Kind").as_string(), node.attribute("Comment").as_string(), node.attribute("Value").as_float()));
+            }
+                
+            mlLog::Print("\t");
+            for ( int i = 0, n = classifyList.size(); i < n; ++i )
+            {
+                mlLog::Print("%s%s", classifyList[i].c_str(), spaceList[i].c_str());
+            }
+            mlLog::Print("\n");
+            char last_date[10] = "";
+            if ( !nodeList.empty() )
+            {
+                mlChar::Strcpy( last_date, 10, nodeList[0].date );
+            }
+            for ( auto & x: nodeList )
+            {
+                if ( strcmp(last_date, x.date) == 0 )
+                {
+                    for ( int i = 0, n = classifyList.size(); i < n; ++i )
+                    {
+                        if ( strcmp(x.classify, classifyList[i].c_str()) == 0 )
+                        {
+                            valueList[i] += x.value;
+                        }
+                    }
+                }
+                else
+                {
+                    mlLog::Print("%s\t", last_date + 1);
+                    
+                    for ( int i = 0, n = classifyList.size(); i < n; ++i )
+                    {
+                        mlLog::Print("%.f\t", valueList[i]);
+                        if ( strcmp(x.classify, classifyList[i].c_str()) == 0 )
+                        {
+                            valueList[i] = x.value;
+                        }
+                        else
+                        {
+                            valueList[i] = 0;
+                        }
+                    }
+                    mlLog::Print("\n");
+                    mlChar::Strcpy( last_date, 10, x.date );
+                }
+            }
+            mlLog::Print("%s\t", last_date + 1);
+            
+            for ( int i = 0, n = classifyList.size(); i < n; ++i )
+            {
+                mlLog::Print("%.f\t", valueList[i]);
+                valueList[i] = 0;
+            }
+            mlLog::Print("\n");
+        }
     }
 }
 

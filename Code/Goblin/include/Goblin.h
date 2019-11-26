@@ -48,6 +48,7 @@ private:
     
     bool    _LoadConfig();
     
+    void    _ShowGeneral( const char * path_ );
     void    _ShowList( const char * path_, const char * tag_ );
     
     bool    _Date2Timestamp( const char * date_, long & timestamp_ );
