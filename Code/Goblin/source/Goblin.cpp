@@ -62,6 +62,7 @@ void Goblin::NextDay()
     {
         m_lToday += 86400;
     }
+    ShowStatus();
 }
 
 //-------------------------------------------------------------------------
@@ -71,6 +72,7 @@ void Goblin::PrevDay()
     {
         m_lToday -= 86400;
     }
+    ShowStatus();
 }
 //-------------------------------------------------------------------------
 void Goblin::GetDay( char * date_, int char_size_ )
@@ -86,6 +88,7 @@ bool Goblin::SetDay( const char * date_ )
         mlLog::Warning("date format wrong.");
         return false;
     }
+    ShowStatus();
 
     return true;
 }
@@ -129,28 +132,34 @@ void Goblin::SetKind( const char * kind_ )
 //-------------------------------------------------------------------------
 void Goblin::AddDataToCache( float data_, const char * comment_ )
 {
-    char bPath[255];
-    mlPath::HomeDash2Absolute( m_cWorkPath, bPath );
-    sprintf(bPath, "%s/%s.cache.xml", bPath, m_cType );
-    
-    pugi::xml_document doc;
-    pugi::xml_parse_result result = doc.load_file( bPath );
-    if ( !result )
+    if ( data_ >= 0.01 )
     {
-        doc.append_child("NumbershXml").append_attribute("type").set_value(m_cType);
+        char bPath[255];
+        mlPath::HomeDash2Absolute( m_cWorkPath, bPath );
+        sprintf(bPath, "%s/%s.cache.xml", bPath, m_cType );
+        
+        pugi::xml_document doc;
+        pugi::xml_parse_result result = doc.load_file( bPath );
+        if ( !result )
+        {
+            doc.append_child("NumbershXml").append_attribute("type").set_value(m_cType);
+        }
+        pugi::xml_node root = doc.child("NumbershXml");
+        
+        char cToday[10];
+        mlTime::Timestamp2String(m_lToday, "C%Y%m%d", cToday, 10);
+        pugi::xml_node node = root.append_child( cToday );
+        
+        node.append_attribute("Classify").set_value(m_cClassify);
+        node.append_attribute("Kind").set_value(m_cKind);
+        node.append_attribute("Comment").set_value(comment_);
+        node.append_attribute("Value").set_value(data_);
+        
+        if ( doc.save_file( bPath ) )
+        {
+            mlLog::Print("[%s] %s/%s %.2f", cToday + 1, m_cClassify, m_cKind, data_ );
+        }
     }
-    pugi::xml_node root = doc.child("NumbershXml");
-    
-    char cToday[10];
-    mlTime::Timestamp2String(m_lToday, "C%Y%m%d", cToday, 10);
-    pugi::xml_node node = root.append_child( cToday );
-    
-    node.append_attribute("Classify").set_value(m_cClassify);
-    node.append_attribute("Kind").set_value(m_cKind);
-    node.append_attribute("Comment").set_value(comment_);
-    node.append_attribute("Value").set_value(data_);
-    
-    doc.save_file( bPath );
 }
 
 //-------------------------------------------------------------------------
@@ -514,9 +523,12 @@ void Goblin::_ShowGeneral( const char * path_ )
                 {
                     mlLog::Print("%s\t", last_date + 1);
                     
+                    float fDaySum = 0.0f;
+                    
                     for ( int i = 0, n = classifyList.size(); i < n; ++i )
                     {
                         mlLog::Print("%.f\t", valueList[i]);
+                        fDaySum += valueList[i];
                         if ( strcmp(x.classify, classifyList[i].c_str()) == 0 )
                         {
                             valueList[i] = x.value;
@@ -526,18 +538,19 @@ void Goblin::_ShowGeneral( const char * path_ )
                             valueList[i] = 0;
                         }
                     }
-                    mlLog::Print("\n");
+                    mlLog::Print(" %.f\n", fDaySum);
                     mlChar::Strcpy( last_date, 10, x.date );
                 }
             }
             mlLog::Print("%s\t", last_date + 1);
-            
+            float fDaySum = 0.0f;
             for ( int i = 0, n = classifyList.size(); i < n; ++i )
             {
                 mlLog::Print("%.f\t", valueList[i]);
+                fDaySum += valueList[i];
                 valueList[i] = 0;
             }
-            mlLog::Print("\n");
+            mlLog::Print(" %.f\n", fDaySum);
         }
     }
 }

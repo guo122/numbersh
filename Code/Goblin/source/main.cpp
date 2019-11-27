@@ -76,6 +76,7 @@ int main( int argc, const char * argv[] )
     else
     {
         Goblin::Instance()->ShowStatus();
+        Goblin::Instance()->ShowCache();
     }
     Goblin::Destory();
     return 0;
