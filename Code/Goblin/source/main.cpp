@@ -22,6 +22,11 @@ int main( int argc, const char * argv[] )
         else if ( strcmp( cmd, "kind") == 0 )
         {
             Goblin::Instance()->SetKind( phrase.next() );
+            const char * data = phrase.next();
+            if ( strcmp( data, "") != 0 )
+            {
+                Goblin::Instance()->AddDataToCache( atof(data), phrase.next() );
+            }
         }
         else if ( strcmp( cmd, "next") == 0 )
         {

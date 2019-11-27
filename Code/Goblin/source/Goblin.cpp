@@ -444,6 +444,7 @@ bool Goblin::_LoadConfig()
         node = node.append_child("Classify");
         node.append_attribute("name");
         node.append_attribute("size").set_value(0);
+        node.append_attribute("space").set_value(" ");
         node = node.append_child("Kind");
         return doc.save_file( bPath );
     }

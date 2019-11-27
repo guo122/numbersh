@@ -54,7 +54,7 @@ private:
     bool    _Date2Timestamp( const char * date_, long & timestamp_ );
     
 private:
-    char     m_cConfigPath[_PATH_MAX]{ "~/etc/numbersh.xml" };
+    char     m_cConfigPath[_PATH_MAX]{ "~/Documents/numbersh.xml" };
     char     m_cWorkPath[_PATH_MAX]{ "~/Documents" };
     long     m_lToday{ 0 };
     char     m_cType[_CLASSIFY_MAX]{ "" };
