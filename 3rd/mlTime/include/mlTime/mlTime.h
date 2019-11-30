@@ -53,6 +53,19 @@ void Timestamp2String( const long & timestamp_, const char * format_, char * str
 
 void String2Timestamp( const char * str_, const char * format_, long & timestamp_ );
 
+bool Date2Timestamp( const char * date_, long & timestamp_ );
+
+void MonthOffset( int offset_, long & timestamp_ );
+void SetYear( int year_, long & timestamp_ );
+void SetMonth( int month_, long & timestamp_ );
+void SetDay( int day_, long & timestamp_ );
+
+void SetHour( int hour_, long & timestamp_ );
+void SetMinute( int min_, long & timestamp_ );
+void SetSecond( int sec_, long & timestamp_ );
+
+long Now();
+
 };
 
 #endif // _MLTIME_H_1E3E6EBEC2676735C99858BB4491421C_

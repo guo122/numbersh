@@ -56,9 +56,11 @@ int main( int argc, const char * argv[] )
         {
             Goblin::Instance()->ShowAllData();
         }
-        else if ( strcmp( cmd, "current") == 0 )
+        else if ( strcmp( cmd, "general") == 0 )
         {
-            Goblin::Instance()->ShowGeneral();
+            const char * c1 = phrase.next();
+            const char * c2 = phrase.next();
+            Goblin::Instance()->ShowGeneral(c1, c2);
         }
         else if ( strcmp( cmd, "help") == 0 )
         {

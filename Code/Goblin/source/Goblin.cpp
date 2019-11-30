@@ -83,7 +83,7 @@ void Goblin::GetDay( char * date_, int char_size_ )
 //-------------------------------------------------------------------------
 bool Goblin::SetDay( const char * date_ )
 {
-    if ( !_Date2Timestamp( date_, m_lToday ) )
+    if ( mlTime::Date2Timestamp( date_, m_lToday ) )
     {
         mlLog::Warning("date format wrong.");
         return false;
@@ -213,7 +213,7 @@ void Goblin::CacheToStorage()
                 nodeList.push_back(GoblinDesc(node.name(), node.attribute("Classify").as_string(), node.attribute("Kind").as_string(), node.attribute("Comment").as_string(), node.attribute("Value").as_float()));
             }
             std::sort(nodeList.begin(), nodeList.end(), []( GoblinDesc &x, GoblinDesc &y ){
-                if ( strcmp( x.date, y.date ) > 0 )
+                if ( strcmp( x.date, y.date ) < 0 )
                 {
                     return true;
                 }
@@ -278,12 +278,63 @@ void Goblin::ShowStorage()
 }
 
 //-------------------------------------------------------------------------
-void Goblin::ShowGeneral()
+void Goblin::ShowGeneral( const char * c1, const char * c2 )
 {
     char bPath[255];
     mlPath::HomeDash2Absolute( m_cWorkPath, bPath );
     sprintf(bPath, "%s/%s.xml", bPath, m_cType );
-    _ShowGeneral( bPath );
+    
+    long lBegin = mlTime::Now();
+    mlTime::SetHour(0, lBegin);
+    mlTime::SetMinute(0, lBegin);
+    mlTime::SetSecond(0, lBegin);
+    long lEnd = lBegin;
+    
+    if ( strcmp(c1, "all") == 0 )
+    {
+        lBegin = lEnd = -1;
+    }
+    else if ( strcmp(c1, "last") == 0 )
+    {
+        mlTime::SetDay(1, lBegin);
+        mlTime::SetDay(1, lEnd);
+        mlTime::MonthOffset(-1, lBegin);
+        lEnd -= 86400;
+    }
+    else if ( strcmp(c1, "year") == 0 )
+    {
+        mlTime::SetMonth(1, lBegin);
+        mlTime::SetDay(1, lBegin);
+    }
+    else if ( strcmp(c1, "") == 0 )
+    {
+        mlTime::SetDay(1, lBegin);
+    }
+    else if ( strlen(c1) == 2 && strlen(c2) == 2 )
+    {
+        mlTime::SetDay(atoi(c1), lBegin);
+        mlTime::SetDay(atoi(c2), lEnd);
+    }
+    else if ( strlen(c1) == 4 && strlen(c2) == 4 )
+    {
+        {
+            char buffer[3] = { c1[0], c1[1], 0 };
+            mlTime::SetMonth(atoi(buffer), lBegin);
+            mlTime::SetDay(atoi(c1 + 2), lBegin);
+        }
+        {
+            char buffer[3] = { c2[0], c2[1], 0 };
+            mlTime::SetMonth(atoi(buffer), lEnd);
+            mlTime::SetDay(atoi(c2 + 2), lEnd);
+        }
+    }
+    else if ( strlen(c1) == 8 && strlen(c2) == 8 )
+    {
+        mlTime::Date2Timestamp(c1, lBegin);
+        mlTime::Date2Timestamp(c2, lEnd);
+    }
+    
+    _ShowGeneral( bPath, lBegin, lEnd );
 }
 
 //-------------------------------------------------------------------------
@@ -324,7 +375,7 @@ void Goblin::PrintComplete( const char * cmd_ )
         
         if ( strcmp( cmd_, "goblin" ) == 0 )
         {
-            mlLog::Print("type classify kind next prev date save cache storage all current help version");
+            mlLog::Print("type classify kind next prev date save cache storage all general help version");
         }
         else if ( strcmp( cmd_, "type" ) == 0 )
         {
@@ -377,6 +428,10 @@ void Goblin::PrintComplete( const char * cmd_ )
                 }
             }
         }
+        else if ( strcmp ( cmd_, "general" ) == 0 )
+        {
+            mlLog::Print("all last year");
+        }
     }
 }
 
@@ -417,7 +472,7 @@ bool Goblin::_LoadRuntimeData()
         mlChar::Strcpy(m_cConfigPath, _PATH_MAX, root.attribute("ConfigPath").as_string());
         
         pugi::xml_node runtime = root.child("Runtime");
-        if ( !_Date2Timestamp( runtime.attribute("Today").as_string(), m_lToday ) )
+        if ( !mlTime::Date2Timestamp( runtime.attribute("Today").as_string(), m_lToday ) )
         {
             mlLog::Warning("file today date format wrong.");
         }
@@ -460,7 +515,7 @@ bool Goblin::_LoadConfig()
 }
 
 //-------------------------------------------------------------------------
-void Goblin::_ShowGeneral( const char * path_ )
+void Goblin::_ShowGeneral( const char * path_, const long & begin_, const long & end_ )
 {
     char bPath[255];
     mlPath::HomeDash2Absolute( m_cConfigPath, bPath );
@@ -477,7 +532,9 @@ void Goblin::_ShowGeneral( const char * path_ )
             std::vector<std::string> classifyList;
             std::vector<std::string> spaceList;
             std::vector<float>  valueList;
+            std::vector<float>  totalList;
             
+            // get title
             for ( pugi::xml_node type_node : config_root.children() )
             {
                 if ( strcmp( m_cType, type_node.attribute("name").as_string() ) == 0 )
@@ -487,13 +544,22 @@ void Goblin::_ShowGeneral( const char * path_ )
                         classifyList.push_back(classify_node.attribute("name").as_string());
                         spaceList.push_back(classify_node.attribute("space").as_string());
                         valueList.push_back(0);
+                        totalList.push_back(0);
                     }
                 }
             }
 
+            long lNow = -1;
+            
+            // get data
             for ( pugi::xml_node node : root.children() )
             {
-                nodeList.push_back(GoblinDesc(node.name(), node.attribute("Classify").as_string(), node.attribute("Kind").as_string(), node.attribute("Comment").as_string(), node.attribute("Value").as_float()));
+                lNow = -1;
+                mlTime::Date2Timestamp(node.name() + 1, lNow);
+                if ( ( begin_ < 0 ||  lNow >= begin_ ) && ( end_ < 0 || lNow <= end_ ) )
+                {
+                    nodeList.push_back(GoblinDesc(node.name(), node.attribute("Classify").as_string(), node.attribute("Kind").as_string(), node.attribute("Comment").as_string(), node.attribute("Value").as_float()));
+                }
             }
                 
             mlLog::Print("\t");
@@ -516,6 +582,7 @@ void Goblin::_ShowGeneral( const char * path_ )
                         if ( strcmp(x.classify, classifyList[i].c_str()) == 0 )
                         {
                             valueList[i] += x.value;
+                            totalList[i] += x.value;
                         }
                     }
                 }
@@ -532,13 +599,14 @@ void Goblin::_ShowGeneral( const char * path_ )
                         if ( strcmp(x.classify, classifyList[i].c_str()) == 0 )
                         {
                             valueList[i] = x.value;
+                            totalList[i] += x.value;
                         }
                         else
                         {
                             valueList[i] = 0;
                         }
                     }
-                    mlLog::Print(" %.f\n", fDaySum);
+                    mlLog::Print("||\t%.f\n", fDaySum);
                     mlChar::Strcpy( last_date, 10, x.date );
                 }
             }
@@ -550,7 +618,15 @@ void Goblin::_ShowGeneral( const char * path_ )
                 fDaySum += valueList[i];
                 valueList[i] = 0;
             }
-            mlLog::Print(" %.f\n", fDaySum);
+            // todo(gzy): now display wrong.
+            mlLog::Print("||\t%.f\n\t\t", fDaySum);
+            fDaySum = 0;
+            for ( auto & x: totalList )
+            {
+                fDaySum += x;
+                mlLog::Print("%.f\t", x);
+            }
+            mlLog::Print("\t%.2f\n", fDaySum);
         }
     }
 }
@@ -573,19 +649,4 @@ void Goblin::_ShowList( const char * path_, const char * tag_ )
             }
         }
     }
-}
-
-//-------------------------------------------------------------------------
-bool Goblin::_Date2Timestamp( const char * date_, long & timestamp_ )
-{
-    if ( strlen(date_) == 8 )
-    {
-        char cDatetime[18];
-        strcpy(cDatetime, date_);
-        strcat(cDatetime, " 00:00:00");
-        mlTime::String2Timestamp(cDatetime, "%Y%m%d %H:%M:%S", timestamp_);
-        
-        return timestamp_ >= 0;
-    }
-    return false;
 }

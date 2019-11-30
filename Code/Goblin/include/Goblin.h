@@ -34,7 +34,7 @@ public:
     void    ShowStatus();
     void    ShowCache();
     void    ShowStorage();
-    void    ShowGeneral();
+    void    ShowGeneral( const char * c1, const char * c2 );
     void    ShowAllData();
     void    ShowHelp();
     void    ShowVersion();
@@ -48,10 +48,8 @@ private:
     
     bool    _LoadConfig();
     
-    void    _ShowGeneral( const char * path_ );
+    void    _ShowGeneral( const char * path_, const long & begin_ = -1, const long & end_ = -1 );
     void    _ShowList( const char * path_, const char * tag_ );
-    
-    bool    _Date2Timestamp( const char * date_, long & timestamp_ );
     
 private:
     char     m_cConfigPath[_PATH_MAX]{ "~/Documents/numbersh.xml" };
