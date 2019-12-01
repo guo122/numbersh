@@ -59,6 +59,10 @@ private:
     char     m_cClassify[_CLASSIFY_MAX]{ "" };
     char     m_cKind[_CLASSIFY_MAX]{ "" };
     
+    std::vector<std::string>    m_TypeList;
+    std::vector<std::string>    m_ClassifyList;
+    std::vector<std::string>    m_KindList;
+    
 private:
     Goblin();
     ~Goblin();

@@ -103,6 +103,7 @@ const char * Goblin::GetType()
 void Goblin::SetType( const char * type_ )
 {
     mlChar::Strcpy(m_cType, _CLASSIFY_MAX, type_);
+    ShowStatus();
 }
 
 //-------------------------------------------------------------------------
@@ -115,6 +116,7 @@ const char * Goblin::GetClassify()
 void Goblin::SetClassify( const char * classify_ )
 {
     mlChar::Strcpy(m_cClassify, _CLASSIFY_MAX, classify_);
+    ShowStatus();
 }
 
 //-------------------------------------------------------------------------
@@ -126,7 +128,25 @@ const char * Goblin::GetKind()
 //-------------------------------------------------------------------------
 void Goblin::SetKind( const char * kind_ )
 {
+    if ( std::find(m_KindList.begin(), m_KindList.end(), kind_) == m_KindList.end() )
+    {
+        pugi::xml_document doc;
+        char bPath[255];
+        mlPath::HomeDash2Absolute( m_cConfigPath, bPath );
+        pugi::xml_parse_result result = doc.load_file(bPath);
+        if ( result )
+        {
+            pugi::xml_node root  = doc.child("NumbershConfig");
+            pugi::xml_node node = root.find_child_by_attribute("Type", "name", m_cType).find_child_by_attribute("Classify", "name", m_cClassify);
+            if ( node )
+            {
+                node.append_child("Kind").text().set(kind_);
+                doc.save_file(bPath);
+            }
+        }
+    }
     mlChar::Strcpy(m_cKind, _CLASSIFY_MAX, kind_);
+    ShowStatus();
 }
 
 //-------------------------------------------------------------------------
@@ -157,7 +177,7 @@ void Goblin::AddDataToCache( float data_, const char * comment_ )
         
         if ( doc.save_file( bPath ) )
         {
-            mlLog::Print("[%s] %s/%s %.2f", cToday + 1, m_cClassify, m_cKind, data_ );
+            mlLog::Print("[%s] %s/%s %.2f\n", cToday + 1, m_cClassify, m_cKind, data_ );
         }
     }
 }
@@ -365,73 +385,34 @@ void Goblin::ShowVersion()
 //-------------------------------------------------------------------------
 void Goblin::PrintComplete( const char * cmd_ )
 {
-    pugi::xml_document doc;
-    char bPath[255];
-    mlPath::HomeDash2Absolute( m_cConfigPath, bPath );
-    pugi::xml_parse_result result = doc.load_file(bPath);
-    if (result)
+    if ( strcmp( cmd_, "goblin" ) == 0 )
     {
-        pugi::xml_node root = doc.child("NumbershConfig");
-        
-        if ( strcmp( cmd_, "goblin" ) == 0 )
+        mlLog::Print("type classify kind next prev date save cache storage all general help version");
+    }
+    else if ( strcmp( cmd_, "type" ) == 0 )
+    {
+        for ( auto & x : m_TypeList )
         {
-            mlLog::Print("type classify kind next prev date save cache storage all general help version");
+            mlLog::Print("%s ", x.c_str());
         }
-        else if ( strcmp( cmd_, "type" ) == 0 )
+    }
+    else if ( strcmp( cmd_, "classify" ) == 0 )
+    {
+        for ( auto & x : m_ClassifyList )
         {
-            char buffer[255] = "";
-            for ( pugi::xml_node node : root.children() )
-            {
-                sprintf(buffer, "%s %s", buffer, node.attribute("name").as_string());
-            }
-            mlLog::Print( buffer );
+            mlLog::Print("%s ", x.c_str());
         }
-        else if ( strcmp( cmd_, "classify" ) == 0 )
+    }
+    else if ( strcmp( cmd_, "kind" ) == 0 )
+    {
+        for ( auto & x : m_KindList )
         {
-            char * buffer = NULL;
-            for ( pugi::xml_node type_node : root.children() )
-            {
-                if ( strcmp( m_cType, type_node.attribute("name").as_string() ) == 0 )
-                {
-                    buffer = new char[type_node.attribute("size").as_int()];
-                    for ( pugi::xml_node classify_node : type_node.children() )
-                    {
-                        sprintf(buffer, "%s %s", buffer, classify_node.attribute("name").as_string());
-                    }
-                    mlLog::Print( buffer );
-                    delete[] buffer;
-                    return;
-                }
-            }
+            mlLog::Print("%s ", x.c_str());
         }
-        else if ( strcmp( cmd_, "kind" ) == 0 )
-        {
-            char * buffer = NULL;
-            for ( pugi::xml_node type_node : root.children() )
-            {
-                if ( strcmp( m_cType, type_node.attribute("name").as_string() ) == 0 )
-                {
-                    for ( pugi::xml_node classify_node : type_node.children() )
-                    {
-                        if ( strcmp( m_cClassify, classify_node.attribute("name").as_string() ) == 0 )
-                        {
-                            buffer = new char[classify_node.attribute("size").as_int()];
-                            for ( pugi::xml_node kind_node : classify_node.children() )
-                            {
-                                sprintf(buffer, "%s %s", buffer, kind_node.child_value());
-                            }
-                            mlLog::Print( buffer );
-                            delete[] buffer;
-                            return;
-                        }
-                    }
-                }
-            }
-        }
-        else if ( strcmp ( cmd_, "general" ) == 0 )
-        {
-            mlLog::Print("all last year");
-        }
+    }
+    else if ( strcmp ( cmd_, "general" ) == 0 )
+    {
+        mlLog::Print("all last year");
     }
 }
 
@@ -496,6 +477,28 @@ bool Goblin::_LoadConfig()
         pugi::xml_node root  = doc.child("NumbershConfig");
         
         mlChar::Strcpy(m_cWorkPath, _PATH_MAX, root.attribute("WorkPath").as_string());
+        
+        m_TypeList.clear();
+        m_ClassifyList.clear();
+        m_KindList.clear();
+        for ( pugi::xml_node type_node : root.children() )
+        {
+            m_TypeList.push_back(type_node.attribute("name").as_string());
+            if ( strcmp( m_cType, type_node.attribute("name").as_string() ) == 0 )
+            {
+                for ( pugi::xml_node classify_node : type_node.children() )
+                {
+                    m_ClassifyList.push_back(classify_node.attribute("name").as_string());
+                    if ( strcmp( m_cClassify, classify_node.attribute("name").as_string() ) == 0 )
+                    {
+                        for ( pugi::xml_node kind_node : classify_node.children() )
+                        {
+                            m_KindList.push_back(kind_node.text().as_string());
+                        }
+                    }
+                }
+            }
+        }
         return true;
     }
     else
